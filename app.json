@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Review My Case",
+    "slug": "review-my-case",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#07070f"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.reviewmycase.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allows you to upload evidence photos to your case.",
+        "NSCameraUsageDescription": "Allows you to photograph documents as evidence.",
+        "NSMicrophoneUsageDescription": "Allows you to record voice notes describing your situation."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#07070f"
+      },
+      "package": "com.reviewmycase.app",
+      "versionCode": 1,
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-document-picker",
+        { "iCloudContainerEnvironment": "Production" }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR-EAS-PROJECT-ID-HERE"
+      }
+    }
+  }
+}
