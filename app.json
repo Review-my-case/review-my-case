@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Review My Case",
-    "slug": "my-first-app-fnsxpx8z3r1rnupfg3fo",
+    "slug": "my-first-app",
     "owner": "review-my-case",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,10 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.reviewmycase.app",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.reviewmycase.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -39,3 +36,4 @@
     }
   }
 }
+
