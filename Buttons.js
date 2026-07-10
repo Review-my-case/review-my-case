@@ -50,4 +50,4 @@ export function GhostBtn({ children, onPress, small }) {
       <Text style={{ color: T.textSecondary, fontSize: small ? 13 : 15, fontWeight: "600" }}>{children}</Text>
     </TouchableOpacity>
   );
-}
+      }
