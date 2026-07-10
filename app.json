@@ -4,7 +4,6 @@
     "slug": "my-first-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
@@ -22,10 +21,6 @@
       }
     },
     "android": {
-      "adaptiveIcon": {}
-        "adaptive-icon.png",
-        "backgroundColor": "#07070f"
-      },
       "package": "com.reviewmycase.app",
       "versionCode": 1,
       "permissions": [
