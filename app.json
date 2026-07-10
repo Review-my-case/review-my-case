@@ -22,8 +22,8 @@
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+      "adaptiveIcon": {}
+        "adaptive-icon.png",
         "backgroundColor": "#07070f"
       },
       "package": "com.reviewmycase.app",
