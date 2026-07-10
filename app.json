@@ -4,12 +4,7 @@
     "slug": "my-first-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#07070f"
-    },
+    "userInterfaceStyle": "dark"
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.reviewmycase.app",
