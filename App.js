@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { T } from "./src/theme";
 import { AppProvider } from "./src/context/AppContext";
+import { AuthProvider } from "./src/context/AuthContext";
 import RootNavigator from "./src/navigation/RootNavigator";
 
 const navTheme = {
@@ -22,11 +23,13 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: T.bg }} edges={["top"]}>
         <StatusBar style="light" />
-        <AppProvider>
-          <NavigationContainer theme={navTheme}>
-            <RootNavigator />
-          </NavigationContainer>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <NavigationContainer theme={navTheme}>
+              <RootNavigator />
+            </NavigationContainer>
+          </AppProvider>
+        </AuthProvider>
       </SafeAreaView>
     </SafeAreaProvider>
   );
