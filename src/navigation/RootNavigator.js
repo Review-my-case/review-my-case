@@ -1,13 +1,28 @@
 import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { T } from "../theme";
+import { useAuth } from "../context/AuthContext";
+import AuthNavigator from "./AuthNavigator";
 import RoleSwitcher from "./RoleSwitcher";
 import UserTabs from "./UserTabs";
 import LawyerTabs from "./LawyerTabs";
 import AdminTabs from "./AdminTabs";
 
 export default function RootNavigator() {
+  const { user, initializing } = useAuth();
   const [role, setRole] = useState("user");
+
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, backgroundColor: T.bg, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color={T.gold} size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <AuthNavigator />;
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: T.bg }}>
