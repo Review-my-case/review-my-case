@@ -6,23 +6,36 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState("user");
   const [initializing, setInitializing] = useState(true);
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
+      if (!firebaseUser) {
+        setRole("user");
+        setInitializing(false);
+      }
+    });
+    return unsubscribeAuth;
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribeProfile = onSnapshot(doc(db, "users", user.uid), (snap) => {
+      setRole(snap.exists() ? snap.data().role || "user" : "user");
       setInitializing(false);
     });
-    return unsubscribe;
-  }, []);
+    return unsubscribeProfile;
+  }, [user]);
 
   const clearError = () => setAuthError(null);
 
@@ -31,10 +44,10 @@ export function AuthProvider({ children }) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: name });
-      // Create a matching profile document in Firestore for this user
       await setDoc(doc(db, "users", cred.user.uid), {
         name,
         email,
+        role: "user",
         createdAt: serverTimestamp(),
       });
       return cred.user;
@@ -58,7 +71,7 @@ export function AuthProvider({ children }) {
   const signOut = () => firebaseSignOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, initializing, authError, clearError, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, role, initializing, authError, clearError, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
