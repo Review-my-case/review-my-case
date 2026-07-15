@@ -6,6 +6,7 @@ import Label from "../../components/Label";
 import Avatar from "../../components/Avatar";
 import { PrimaryBtn, GhostBtn } from "../../components/Buttons";
 import { MOCK_USER } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const SETTINGS_ITEMS = [
   { label: "Privacy & Data", icon: "🔒", desc: "Control how your information is used" },
@@ -22,9 +23,10 @@ const STATS = [
 ];
 
 export default function UserProfileScreen() {
+  const { user, signOut } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(MOCK_USER.name);
-  const [email, setEmail] = useState(MOCK_USER.email);
+  const [name, setName] = useState(user?.displayName || MOCK_USER.name);
+  const [email, setEmail] = useState(user?.email || MOCK_USER.email);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -106,7 +108,7 @@ export default function UserProfileScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.signOut}>
+      <TouchableOpacity style={styles.signOut} onPress={signOut}>
         <Text style={{ color: T.red, fontSize: 15, fontWeight: "600" }}>Sign Out</Text>
       </TouchableOpacity>
     </ScrollView>
