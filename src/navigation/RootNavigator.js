@@ -9,8 +9,8 @@ import LawyerTabs from "./LawyerTabs";
 import AdminTabs from "./AdminTabs";
 
 export default function RootNavigator() {
-  const { user, initializing } = useAuth();
-  const [role, setRole] = useState("user");
+  const { user, role, initializing } = useAuth();
+  const [adminPreviewRole, setAdminPreviewRole] = useState("admin");
 
   if (initializing) {
     return (
@@ -24,13 +24,15 @@ export default function RootNavigator() {
     return <AuthNavigator />;
   }
 
+  const effectiveRole = role === "admin" ? adminPreviewRole : role;
+
   return (
     <View style={{ flex: 1, backgroundColor: T.bg }}>
-      <RoleSwitcher role={role} setRole={setRole} />
+      {role === "admin" && <RoleSwitcher role={adminPreviewRole} setRole={setAdminPreviewRole} />}
       <View style={{ flex: 1 }}>
-        {role === "user" && <UserTabs />}
-        {role === "lawyer" && <LawyerTabs />}
-        {role === "admin" && <AdminTabs />}
+        {effectiveRole === "user" && <UserTabs />}
+        {effectiveRole === "lawyer" && <LawyerTabs />}
+        {effectiveRole === "admin" && <AdminTabs />}
       </View>
       <View style={styles.footer}>
         <Text style={styles.footerText}>
