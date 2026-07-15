@@ -1,17 +1,30 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { T } from "../../theme";
 import Card from "../../components/Card";
 import Label from "../../components/Label";
 import Avatar from "../../components/Avatar";
 import Pill from "../../components/Pill";
 import ScoreRing from "../../components/ScoreRing";
-import UrgencyDot from "../../components/UrgencyDot";
 import { PrimaryBtn } from "../../components/Buttons";
-import { MOCK_CASES } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
+import { subscribeToAllCases } from "../../data/casesService";
 
 export default function LawyerDashboardScreen({ navigation }) {
-  const pending = MOCK_CASES.filter((c) => c.status === "pending");
-  const reviewing = MOCK_CASES.filter((c) => c.status === "reviewing");
+  const { user } = useAuth();
+  const [cases, setCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAllCases((data) => {
+      setCases(data);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  const pending = cases.filter((c) => c.status === "pending");
+  const reviewing = cases.filter((c) => c.status === "reviewing");
   const urgent = pending.filter((c) => c.urgency === "immediate");
 
   const goToCase = (c) => navigation.navigate("Cases", { openCase: c });
@@ -21,13 +34,13 @@ export default function LawyerDashboardScreen({ navigation }) {
       <View style={{ marginBottom: 24 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <View>
-            <Text style={styles.h2}>Welcome, Sarah</Text>
-            <Text style={{ color: T.textSecondary, fontSize: 14 }}>Criminal Defense / Appeals · Nigeria</Text>
+            <Text style={styles.h2}>Welcome, {user?.displayName || "Counselor"}</Text>
+            <Text style={{ color: T.textSecondary, fontSize: 14 }}>{user?.email}</Text>
           </View>
-          <Avatar initials="SO" size={48} />
+          <Avatar initials={(user?.displayName || "L").slice(0, 2).toUpperCase()} size={48} />
         </View>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          {[["📬", pending.length, "New cases"], ["📂", reviewing.length, "In review"], ["✅", "11", "Resolved"], ["💰", "$3,200", "Earned"]].map(
+          {[["📬", pending.length, "New cases"], ["📂", reviewing.length, "In review"]].map(
             ([icon, n, l], x) => (
               <View key={x} style={styles.statBox}>
                 <Text style={{ fontSize: 18, marginBottom: 4 }}>{icon}</Text>
@@ -39,52 +52,50 @@ export default function LawyerDashboardScreen({ navigation }) {
         </View>
       </View>
 
-      {urgent.length > 0 && (
-        <Card accent={T.red} style={{ backgroundColor: T.redDim, marginBottom: 16 }}>
-          <Text style={{ color: T.red, fontSize: 12, fontWeight: "800", letterSpacing: 1, marginBottom: 10 }}>
-            🚨 URGENT — ACTION REQUIRED
-          </Text>
-          {urgent.map((c) => (
-            <View key={c.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <View>
-                <Text style={{ color: "#fca5a5", fontWeight: "700", fontSize: 14 }}>
-                  {c.name} · {c.category}
-                </Text>
-                <Text style={{ color: T.textMuted, fontSize: 12 }}>{c.country}</Text>
-              </View>
-              <PrimaryBtn small onPress={() => goToCase(c)}>Review Now</PrimaryBtn>
-            </View>
-          ))}
-        </Card>
-      )}
-
-      <View style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <Label style={{ marginBottom: 0 }}>New Cases ({pending.length})</Label>
-        </View>
-        <View style={{ gap: 8 }}>
-          {pending.map((c) => (
-            <Card key={c.id} onPress={() => goToCase(c)}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <View style={{ flex: 1, paddingRight: 12 }}>
-                  <View style={{ flexDirection: "row", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                    <UrgencyDot urgency={c.urgency} />
-                    <Text style={{ color: T.textPrimary, fontWeight: "700", fontSize: 14 }}>{c.name}</Text>
-                    <Pill label={c.category} color={T.purple} />
-                  </View>
-                  <Text style={{ color: T.textSecondary, fontSize: 13, lineHeight: 18, marginBottom: 6 }}>
-                    {c.story.slice(0, 80)}...
-                  </Text>
-                  <Text style={{ color: T.textMuted, fontSize: 12 }}>
-                    {c.country} · {c.date}
-                  </Text>
+      {loading ? (
+        <ActivityIndicator color={T.gold} style={{ marginTop: 20 }} />
+      ) : (
+        <>
+          {urgent.length > 0 && (
+            <Card accent={T.red} style={{ backgroundColor: T.redDim, marginBottom: 16 }}>
+              <Text style={{ color: T.red, fontSize: 12, fontWeight: "800", letterSpacing: 1, marginBottom: 10 }}>
+                🚨 URGENT — ACTION REQUIRED
+              </Text>
+              {urgent.map((c) => (
+                <View key={c.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={{ color: "#fca5a5", fontWeight: "700", fontSize: 14 }}>{c.category}</Text>
+                  <PrimaryBtn small onPress={() => goToCase(c)}>Review Now</PrimaryBtn>
                 </View>
-                <ScoreRing score={c.score} size={52} />
-              </View>
+              ))}
             </Card>
-          ))}
-        </View>
-      </View>
+          )}
+
+          <View style={{ marginBottom: 16 }}>
+            <Label>New Cases ({pending.length})</Label>
+            {pending.length === 0 ? (
+              <Text style={{ color: T.textMuted, marginTop: 10 }}>No new cases right now.</Text>
+            ) : (
+              <View style={{ gap: 8 }}>
+                {pending.map((c) => (
+                  <Card key={c.id} onPress={() => goToCase(c)}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <View style={{ flex: 1, paddingRight: 12 }}>
+                        <View style={{ flexDirection: "row", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                          <Pill label={c.category} color={T.purple} />
+                        </View>
+                        <Text style={{ color: T.textSecondary, fontSize: 13, lineHeight: 18 }}>
+                          {(c.story || "").slice(0, 80)}...
+                        </Text>
+                      </View>
+                      {c.score != null && <ScoreRing score={c.score} size={52} />}
+                    </View>
+                  </Card>
+                ))}
+              </View>
+            )}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }
