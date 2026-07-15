@@ -1,19 +1,29 @@
-import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { T } from "../../theme";
 import Card from "../../components/Card";
 import Pill from "../../components/Pill";
 import StatusPill from "../../components/StatusPill";
-import UrgencyDot from "../../components/UrgencyDot";
 import ScoreRing from "../../components/ScoreRing";
 import { GhostBtn } from "../../components/Buttons";
-import { MOCK_CASES } from "../../data/mockData";
+import { subscribeToAllCases, updateCaseStatus } from "../../data/casesService";
 
 const FILTERS = ["all", "pending", "reviewing", "matched", "closed"];
 
 export default function AdminCasesScreen() {
   const [filter, setFilter] = useState("all");
-  const filtered = filter === "all" ? MOCK_CASES : MOCK_CASES.filter((c) => c.status === filter);
+  const [cases, setCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAllCases((data) => {
+      setCases(data);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  const filtered = filter === "all" ? cases : cases.filter((c) => c.status === filter);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -39,37 +49,39 @@ export default function AdminCasesScreen() {
           );
         })}
       </View>
-      <View style={{ gap: 8 }}>
-        {filtered.map((c) => (
-          <Card key={c.id}>
-            <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-              <ScoreRing score={c.score} size={50} />
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 6 }}>
-                  <Text style={{ color: T.textPrimary, fontWeight: "700", fontSize: 14 }}>{c.name}</Text>
-                  <StatusPill status={c.status} />
-                  <UrgencyDot urgency={c.urgency} />
-                  <Text style={{ color: T.textMuted, fontSize: 12 }}>{c.country}</Text>
+
+      {loading ? (
+        <ActivityIndicator color={T.gold} style={{ marginTop: 30 }} />
+      ) : filtered.length === 0 ? (
+        <Text style={{ color: T.textMuted, textAlign: "center", marginTop: 30 }}>No cases yet.</Text>
+      ) : (
+        <View style={{ gap: 8 }}>
+          {filtered.map((c) => (
+            <Card key={c.id}>
+              <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+                {c.score != null && <ScoreRing score={c.score} size={50} />}
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 6 }}>
+                    <Text style={{ color: T.textPrimary, fontWeight: "700", fontSize: 14 }}>{c.category || "Case"}</Text>
+                    <StatusPill status={c.status} />
+                  </View>
+                  <Text style={{ color: T.textSecondary, fontSize: 13, marginBottom: 6 }}>{(c.story || "").slice(0, 80)}...</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+                    {(c.violations || []).map((v, i) => (
+                      <Pill key={i} label={v.type || v} color={T.red} />
+                    ))}
+                  </View>
                 </View>
-                <Text style={{ color: T.textSecondary, fontSize: 13, marginBottom: 6 }}>{c.story.slice(0, 80)}...</Text>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
-                  {c.violations.map((v, i) => (
-                    <Pill key={i} label={v} color={T.red} />
-                  ))}
+                <View style={{ gap: 6 }}>
+                  <TouchableOpacity style={styles.flagBtn} onPress={() => updateCaseStatus(c.id, "closed")}>
+                    <Text style={{ color: T.red, fontSize: 12, fontWeight: "700" }}>Close</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View style={{ gap: 6 }}>
-                <TouchableOpacity style={styles.viewBtn}>
-                  <Text style={{ color: T.blue, fontSize: 12, fontWeight: "700" }}>View</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.flagBtn}>
-                  <Text style={{ color: T.red, fontSize: 12, fontWeight: "700" }}>Flag</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Card>
-        ))}
-      </View>
+            </Card>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -79,6 +91,5 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
   h2: { color: T.textPrimary, fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
   filterChip: { borderWidth: 1, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
-  viewBtn: { backgroundColor: T.blueDim, borderWidth: 1, borderColor: T.blue + "44", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
   flagBtn: { backgroundColor: T.redDim, borderWidth: 1, borderColor: T.red + "44", borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
 });
