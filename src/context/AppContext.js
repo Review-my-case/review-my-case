@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, useCallback } from "react";
+import { useAuth } from "./AuthContext";
+import { submitCase } from "../data/casesService";
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
+  const { user } = useAuth();
   const [intakeOpen, setIntakeOpen] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -10,6 +13,7 @@ export function AppProvider({ children }) {
   const handleIntakeComplete = useCallback(async (form) => {
     setIntakeOpen(false);
     setAnalyzing(true);
+    let parsed;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -27,10 +31,9 @@ export function AppProvider({ children }) {
       });
       const data = await res.json();
       const text = data.content.map((b) => b.text || "").join("");
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
-      setAnalysisResult(parsed);
+      parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
     } catch (e) {
-      setAnalysisResult({
+      parsed = {
         summary: "Your situation has been reviewed. There appear to be serious concerns worth pursuing with qualified legal help.",
         justiceScore: 61,
         scoreRationale: "Multiple procedural concerns identified based on your account.",
@@ -49,10 +52,20 @@ export function AppProvider({ children }) {
         ],
         urgency: "soon",
         encouragement: "What happened to you matters. You deserve to be heard.",
-      });
+      };
     }
+    setAnalysisResult(parsed);
+
+    if (user) {
+      try {
+        await submitCase(user.uid, form, parsed);
+      } catch (e) {
+        console.error("Failed to save case to Firestore:", e);
+      }
+    }
+
     setAnalyzing(false);
-  }, []);
+  }, [user]);
 
   const value = {
     intakeOpen,
