@@ -4,6 +4,8 @@ import { submitCase } from "../data/casesService";
 
 const AppContext = createContext(null);
 
+const AI_PROXY_URL = "REPLACE_WITH_YOUR_CLOUDFLARE_WORKER_URL";
+
 export function AppProvider({ children }) {
   const { user } = useAuth();
   const [intakeOpen, setIntakeOpen] = useState(false);
@@ -15,7 +17,7 @@ export function AppProvider({ children }) {
     setAnalyzing(true);
     let parsed;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch(AI_PROXY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -38,11 +40,7 @@ export function AppProvider({ children }) {
         justiceScore: 61,
         scoreRationale: "Multiple procedural concerns identified based on your account.",
         violations: [
-          {
-            type: "Procedural Violation — Review Needed",
-            detail: "A qualified attorney should review the full record to confirm applicable violations.",
-            severity: "High",
-          },
+          { type: "Procedural Violation — Review Needed", detail: "A qualified attorney should review the full record to confirm applicable violations.", severity: "High" },
         ],
         nextSteps: [
           "Contact a free legal aid organization this week",
@@ -67,13 +65,7 @@ export function AppProvider({ children }) {
     setAnalyzing(false);
   }, [user]);
 
-  const value = {
-    intakeOpen,
-    setIntakeOpen,
-    analyzing,
-    analysisResult,
-    handleIntakeComplete,
-  };
+  const value = { intakeOpen, setIntakeOpen, analyzing, analysisResult, handleIntakeComplete };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
