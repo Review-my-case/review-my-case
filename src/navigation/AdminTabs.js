@@ -4,12 +4,13 @@ import { T } from "../theme";
 import AdminOverviewScreen from "../screens/admin/AdminOverviewScreen";
 import AdminCasesScreen from "../screens/admin/AdminCasesScreen";
 import AdminLawyersScreen from "../screens/admin/AdminLawyersScreen";
+import AdminVerificationsScreen from "../screens/admin/AdminVerificationsScreen";
 import AdminReportsScreen from "../screens/admin/AdminReportsScreen";
 import AdminSettingsScreen from "../screens/admin/AdminSettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
-const ICONS = { Overview: "🛡️", Cases: "📁", Lawyers: "⚖️", Reports: "📈", Settings: "⚙️" };
+const ICONS = { Overview: "🛡️", Cases: "📁", Lawyers: "⚖️", Verify: "🪪", Reports: "📈", Settings: "⚙️" };
 
 export default function AdminTabs() {
   return (
@@ -25,8 +26,9 @@ export default function AdminTabs() {
       <Tab.Screen name="Overview" component={AdminOverviewScreen} />
       <Tab.Screen name="Cases" component={AdminCasesScreen} />
       <Tab.Screen name="Lawyers" component={AdminLawyersScreen} />
+      <Tab.Screen name="Verify" component={AdminVerificationsScreen} />
       <Tab.Screen name="Reports" component={AdminReportsScreen} />
       <Tab.Screen name="Settings" component={AdminSettingsScreen} />
     </Tab.Navigator>
   );
-}
+      }
