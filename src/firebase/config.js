@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// ─── This is your real Firebase project config (review-my-case) ────────────
 const firebaseConfig = {
   apiKey: "AIzaSyDDq98wa7zGvazPRp95HFx5wwJpXJgeK-w",
   authDomain: "review-my-case.firebaseapp.com",
@@ -20,5 +20,6 @@ export const auth = initializeAuth(app, {
 });
 
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export default app;
