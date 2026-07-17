@@ -32,13 +32,30 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user) return;
-    const unsubscribeProfile = onSnapshot(doc(db, "users", user.uid), (snap) => {
-      const data = snap.exists() ? snap.data() : {};
-      setRole(data.role || "user");
-      setProfile(data);
-      setInitializing(false);
-    });
-    return unsubscribeProfile;
+
+    const timeout = setTimeout(() => setInitializing(false), 8000);
+
+    const unsubscribeProfile = onSnapshot(
+      doc(db, "users", user.uid),
+      (snap) => {
+        clearTimeout(timeout);
+        const data = snap.exists() ? snap.data() : {};
+        setRole(data.role || "user");
+        setProfile(data);
+        setInitializing(false);
+      },
+      (error) => {
+        clearTimeout(timeout);
+        console.error("Profile listener error:", error.message);
+        setRole("user");
+        setInitializing(false);
+      }
+    );
+
+    return () => {
+      clearTimeout(timeout);
+      unsubscribeProfile();
+    };
   }, [user]);
 
   const clearError = () => setAuthError(null);
@@ -101,4 +118,4 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
-    }
+}
